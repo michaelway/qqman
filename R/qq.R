@@ -26,6 +26,16 @@ qq = function(pvector, ...) {
     o = -log10(sort(pvector,decreasing=FALSE))
     e = -log10( ppoints(length(pvector) ))
     
+    #Method to prevent overplotting when many datapoints
+    #Massively speeds up plotting with 100,000-1,000,000 SNPs but slows processing
+    dup=duplicated(o)
+    
+    oq=numeric()
+    eq=numeric()
+    for (i in (1:length(dup))){
+    if(dup[i]==FALSE){oq<-append(oq, o[i]); eq<-append(eq,e[i])}
+    }
+    
     
 #     # The old way
 #     plot(e, o, pch=20, 
@@ -36,7 +46,7 @@ qq = function(pvector, ...) {
     # The new way to initialize the plot.
     ## See http://stackoverflow.com/q/23922130/654296
     ## First, define your default arguments
-    def_args <- list(pch=20, xlim=c(0, max(e)), ylim=c(0, max(o)), 
+    def_args <- list(pch=20, xlim=c(0, max(eq)), ylim=c(0, max(oq)), 
                      xlab=expression(Expected~~-log[10](italic(p))), 
                      ylab=expression(Observed~~-log[10](italic(p)))
     )
@@ -45,7 +55,7 @@ qq = function(pvector, ...) {
     dotargs <- list(...)
     ## And call the plot function passing NA, your ... arguments, and the default
     ## arguments that were not defined in the ... arguments.
-    tryCatch(do.call("plot", c(list(x=e, y=o), def_args[!names(def_args) %in% names(dotargs)], dotargs)), warn=stop)
+    tryCatch(do.call("plot", c(list(x=eq, y=oq), def_args[!names(def_args) %in% names(dotargs)], dotargs)), warn=stop)
 
     # Add diagonal
     abline(0,1,col="red")
